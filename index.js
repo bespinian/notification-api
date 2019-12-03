@@ -7,9 +7,12 @@ var Notification = require("./notification/model.js").Notification;
 var corsMiddleware = require("restify-cors-middleware");
 var amqp = require("amqplib");
 
+var mqUrl = process.env.MQ_URL || "amqp://notification-mq";
+var dbUrl = process.env.DB_URL || "mongodb://notification-db:27017";
+
 function sendJsonMessage(message) {
   return amqp
-    .connect("amqp://notification-mq")
+    .connect(mqUrl)
     .then(function(conn) {
       return conn
         .createChannel()
@@ -76,7 +79,9 @@ server.del("/notification/:notificationid", function(req, res, next) {
   });
 });
 
-mongoose.connect("mongodb://notification-db:27017/notifications");
+mongoose.connect(dbUrl + "/notifications");
 server.listen(3000, "0.0.0.0", function() {
   console.log("server listening at %s on port %s", "127.0.0.1", 3000);
+  console.log("MQ url: %s", mqUrl);
+  console.log("DB url: %s", dbUrl);
 });
