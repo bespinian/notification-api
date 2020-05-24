@@ -6,9 +6,12 @@ var mongoose = require("mongoose");
 var Notification = require("./notification/model.js").Notification;
 var corsMiddleware = require("restify-cors-middleware");
 var amqp = require("amqplib");
+const promBundle = require('restify-prom-bundle');
 
 var mqUrl = process.env.MQ_URL || "amqp://notification-mq";
 var dbUrl = process.env.DB_URL || "mongodb://notification-db:27017";
+
+server.pre(promBundle.preMiddleware(server, {}));
 
 function sendJsonMessage(message) {
   return amqp
