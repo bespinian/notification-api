@@ -10,7 +10,7 @@ Docker / kubernetes sample application API.
 docker build --no-cache -t mathiskretz/notification-api .
 ```
 
-3. Push the docker image to Artifactory
+3. Push the docker image to the registry
 
 ```
 docker push mathiskretz/notification-api:latest
