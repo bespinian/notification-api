@@ -1,6 +1,6 @@
 {
   "name": "notification-api",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "CF sample application API",
   "main": "index.js",
   "scripts": {
@@ -19,6 +19,7 @@
   "homepage": "https://github.com/mkretz/notification-api#readme",
   "dependencies": {
     "amqplib": "^0.5.2",
+    "bunyan": "^1.8.12",
     "mongoose": "^5.7.5",
     "restify": "^6.3.4",
     "restify-cors-middleware": "^1.1.0",
