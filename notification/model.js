@@ -1,16 +1,19 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-var NotificationSchema = new Schema({
-    text            : {type: String, required: true},
-}, {
-    timestamps: true
-});
+const NotificationSchema = new Schema(
+  {
+    text: { type: String, required: true },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-mongoose.model('Notification', NotificationSchema);
-var Notification = mongoose.model('Notification');
+mongoose.model("Notification", NotificationSchema);
+const Notification = mongoose.model("Notification");
 
 module.exports = {
-    Notification : Notification,
-    NotificationSchema : NotificationSchema
+  Notification,
+  NotificationSchema,
 };

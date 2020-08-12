@@ -1,19 +1,13 @@
-FROM node:carbon
+FROM node:current
 
-# Create app directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
 COPY package*.json ./
+COPY index.js ./
+COPY notification ./notification
 
-RUN npm install
-# If you are building your code for production
-# RUN npm install --only=production
+RUN npm ci --production
 
-# Bundle app source
-COPY . .
-
+USER node
 EXPOSE 3000
-CMD [ "npm", "start" ]
+CMD ["npm", "start"]

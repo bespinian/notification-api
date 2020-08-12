@@ -1,29 +1,27 @@
 {
   "name": "notification-api",
-  "version": "1.0.4",
   "description": "CF sample application API",
-  "main": "index.js",
+  "version": "1.0.4",
+  "homepage": "https://github.com/bespinian/notification-api#readme",
+  "author": "Mathis Kretz",
+  "license": "MIT",
   "scripts": {
     "test": "test",
     "start": "node index.js"
   },
+  "dependencies": {
+    "amqplib": "^0.6.0",
+    "bunyan": "^1.8.14",
+    "mongoose": "^5.10.9",
+    "restify": "^8.5.1",
+    "restify-cors-middleware": "^1.1.0",
+    "restify-plugins": "^1.6.0"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mkretz/notification-api.git"
+    "url": "git+https://github.com/bespinian/notification-api.git"
   },
-  "author": "Mathis Kretz",
-  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mkretz/notification-api/issues"
-  },
-  "homepage": "https://github.com/mkretz/notification-api#readme",
-  "dependencies": {
-    "amqplib": "^0.5.2",
-    "bunyan": "^1.8.12",
-    "mongoose": "^5.7.5",
-    "restify": "^6.3.4",
-    "restify-cors-middleware": "^1.1.0",
-    "restify-plugins": "^1.6.0",
-    "restify-prom-bundle": "^2.0.3"
+    "url": "https://github.com/bespinian/notification-api/issues"
   }
 }
