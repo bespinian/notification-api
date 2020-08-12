@@ -1,25 +1,25 @@
-# notification-api-k8s
+# Notification API k8s
 
-Docker / kubernetes sample application API.
+Docker / Kubernetes sample application API.
 
 ## Create a new version
 
 1. Build a new docker image
 
-```
-docker build --no-cache -t mathiskretz/notification-api .
-```
+   ```
+   $ docker build --no-cache -t bespinian/notification-api .
+   ```
 
-3. Push the docker image to the registry
+1. Push the docker image to the registry
 
-```
-docker push mathiskretz/notification-api:latest
-```
+   ```
+   $ docker push bespinian/notification-api:latest
+   ```
 
 ## Requirements to run
 
-1. Assumes that there exists a MongoDB service named `notification-db`
-2. Assumes that there exists a RabbitMQ service named `notification-mq`
+- Assumes that there exists a MongoDB service named `notification-db`
+- Assumes that there exists a RabbitMQ service named `notification-mq`
 
 ## Deployment
 
