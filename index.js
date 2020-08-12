@@ -1,12 +1,17 @@
-var restify = require("restify");
-var bodyParser = require("restify-plugins").bodyParser;
-var packageJson = require("./package.json");
-var mongoose = require("mongoose");
-var Notification = require("./notification/model.js").Notification;
-var corsMiddleware = require("restify-cors-middleware");
-var amqp = require("amqplib");
-const promBundle = require("restify-prom-bundle");
+const restify = require("restify");
+const bodyParser = require("restify-plugins").bodyParser;
+const packageJson = require("./package.json");
+const mongoose = require("mongoose");
+const Notification = require("./notification/model.js").Notification;
+const corsMiddleware = require("restify-cors-middleware");
+const amqp = require("amqplib");
 const Logger = require("bunyan");
+
+const queueName = "notifications";
+
+const mqUrl = process.env.MQ_URL || "amqp://notification-mq";
+const dbUrl = process.env.DB_URL || "mongodb://notification-db";
+
 const log = new Logger.createLogger({
   name: "notification-api",
   serializers: {
@@ -14,43 +19,28 @@ const log = new Logger.createLogger({
   },
 });
 
-var server = restify.createServer({
-  name: "notification-api",
-  version: "1.0.4",
-  log: log,
+const server = restify.createServer({
+  name: packageJson.name,
+  version: packageJson.version,
+  log,
 });
 
-var mqUrl = process.env.MQ_URL || "amqp://notification-mq";
-var dbUrl = process.env.DB_URL || "mongodb://notification-db:27017";
+const sendJsonMessage = async (message) => {
+  try {
+    const conn = await amqp.connect(mqUrl);
+    const chan = await conn.createChannel();
 
-server.pre(promBundle.preMiddleware(server, {}));
+    await chan.assertQueue(queueName, { durable: false });
+    await chan.sendToQueue(queueName, Buffer.from(JSON.stringify(message)));
 
-function sendJsonMessage(message) {
-  return amqp
-    .connect(mqUrl)
-    .then(function (conn) {
-      return conn
-        .createChannel()
-        .then(function (ch) {
-          return ch
-            .assertQueue("notifications", { durable: false })
-            .then(function () {
-              ch.sendToQueue(
-                "notifications",
-                Buffer.from(JSON.stringify(message))
-              );
-              return ch.close();
-            })
-            .catch(console.warn);
-        })
-        .finally(function () {
-          return conn.close();
-        });
-    })
-    .catch(console.warn);
-}
+    await chan.close();
+    await conn.close();
+  } catch (err) {
+    console.error(err);
+  }
+};
 
-var cors = corsMiddleware({
+const cors = corsMiddleware({
   origins: ["*"],
   allowHeaders: [],
   exposeHeaders: [],
@@ -61,47 +51,48 @@ server.use(cors.actual);
 
 server.use(bodyParser());
 
-server.pre(function (request, response, next) {
+server.pre((request, response, next) => {
   request.log.info({ req: request }, "REQUEST");
   next();
 });
 
-server.get("/", function (req, res, next) {
-  var apiInfo = {
+server.get("/", (req, res, next) => {
+  const apiInfo = {
     name: packageJson.name,
     version: packageJson.version,
   };
   return res.send(apiInfo);
 });
 
-server.get("/notification", function (req, res, next) {
-  Notification.find()
-    .exec()
-    .then(function (notifications) {
-      return res.send(notifications);
-    });
+server.get("/notification", async (req, res, next) => {
+  const notification = await Notification.find().exec();
+  return res.send(notification);
 });
 
-server.post("/notification", function (req, res, next) {
-  var notification = new Notification();
+server.post("/notification", async (req, res, next) => {
+  const notification = new Notification();
   notification.text = req.body.text;
-  notification.save().then(function (savedNotification) {
-    sendJsonMessage(savedNotification);
-    return res.send(204, savedNotification);
-  });
+  const savedNotification = await notification.save();
+  await sendJsonMessage(savedNotification);
+  return res.send(204, savedNotification);
 });
 
-server.del("/notification/:notificationid", function (req, res, next) {
-  Notification.findByIdAndRemove(req.params.notificationid, function (
-    removedNotification
-  ) {
-    return res.send(204);
-  });
+server.del("/notification/:notificationid", (req, res, next) => {
+  Notification.findByIdAndRemove(
+    req.params.notificationid,
+    (removedNotification) => {
+      res.send(204);
+    }
+  );
 });
 
-mongoose.connect(dbUrl + "/notifications");
-server.listen(3000, "0.0.0.0", function () {
-  console.log("server listening at %s on port %s", "127.0.0.1", 3000);
-  console.log("MQ url: %s", mqUrl);
-  console.log("DB url: %s", dbUrl);
+mongoose.connect(`${dbUrl}/notifications`, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+server.listen(3000, "0.0.0.0", () => {
+  console.log("server listening at %s on port %s", "localhost", 3000);
+  console.log("MQ URL: %s", mqUrl);
+  console.log("DB URL: %s", dbUrl);
 });
